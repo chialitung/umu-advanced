@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMU Advanced - 登录</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-page login-page-animated">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-logo" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+            <h1 class="login-title">UMU Advanced</h1>
+            <p class="login-subtitle">企业数据管理平台</p>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">账号</label>
+                    <input type="text" id="username" name="username" placeholder="请输入UMU账号" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" placeholder="请输入密码" required autocomplete="current-password">
+                </div>
+                <div id="errorMessage" class="error-message" role="alert" aria-live="polite"></div>
+                <button type="submit" class="login-button" id="loginButton">
+                    <span class="button-text" style="display:inline-flex;align-items:center;gap:8px">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                        登录
+                    </span>
+                    <span class="button-loader hidden" aria-hidden="true"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorEl = document.getElementById('errorMessage');
+            const btn = document.getElementById('loginButton');
+            const btnText = btn.querySelector('.button-text');
+            const btnLoader = btn.querySelector('.button-loader');
+
+            errorEl.textContent = '';
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = '/app';
+                } else {
+                    errorEl.textContent = data.error || '登录失败';
+                    errorEl.classList.add('error-shake');
+                    document.getElementById('username').classList.add('input-error');
+                    document.getElementById('password').classList.add('input-error');
+                    setTimeout(function() {
+                        errorEl.classList.remove('error-shake');
+                        document.getElementById('username').classList.remove('input-error');
+                        document.getElementById('password').classList.remove('input-error');
+                    }, 1000);
+                }
+            } catch (err) {
+                errorEl.textContent = '网络错误，请稍后重试';
+                errorEl.classList.add('error-shake');
+                setTimeout(function() {
+                    errorEl.classList.remove('error-shake');
+                }, 1000);
+            } finally {
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

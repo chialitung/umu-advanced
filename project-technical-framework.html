@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lms-client-sdk 技术框架与实现方法</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --secondary: #475569;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --code-bg: #f1f5f9;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 24px 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 0 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .nav {
+            padding: 16px 0;
+        }
+
+        .nav-group {
+            margin-bottom: 4px;
+        }
+
+        .nav-title {
+            padding: 8px 24px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .nav a {
+            display: block;
+            padding: 8px 24px;
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .nav a:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 40px 48px;
+            max-width: 900px;
+        }
+
+        .main h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .main h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 40px 0 16px;
+            color: var(--text);
+        }
+
+        .main h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 28px 0 12px;
+            color: var(--secondary);
+        }
+
+        .main p {
+            margin-bottom: 14px;
+        }
+
+        .main ul, .main ol {
+            margin: 12px 0 12px 24px;
+        }
+
+        .main li {
+            margin-bottom: 6px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .card h4 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        /* Code */
+        code {
+            font-family: "SF Mono", Monaco, "Cascadia Code", "Fira Code", Consolas, monospace;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #c7254e;
+        }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--code-bg);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover td {
+            background: var(--bg);
+        }
+
+        /* Architecture Diagram */
+        .arch-box {
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 8px 0;
+        }
+
+        .arch-box h5 {
+            color: var(--primary);
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .arch-item {
+            padding: 6px 0;
+            padding-left: 16px;
+            border-left: 2px solid var(--border);
+            color: var(--secondary);
+            font-size: 13px;
+        }
+
+        .arch-arrow {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 18px;
+            padding: 4px 0;
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .badge-red {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .badge-yellow {
+            background: #fef9c3;
+            color: var(--warning);
+        }
+
+        /* TOC top link */
+        .toc-top {
+            display: block;
+            text-align: center;
+            padding: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            .main {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>lms-client-sdk</h1>
+                <p>技术框架与实现方法</p>
+            </div>
+            <nav class="nav">
+                <div class="nav-group">
+                    <div class="nav-title">概览</div>
+                    <a href="#overview">一、项目整体架构</a>
+                    <a href="#tech-stack">二、技术选型</a>
+                </div>
+                <div class="nav-group">
+                    <div class="nav-title">SDK 核心</div>
+                    <a href="#http-client">三、HTTP 客户端</a>
+                    <a href="#auth">四、认证模块</a>
+                    <a href="#endpoints">五、API 端点</a>
+                    <a href="#storage">六、持久化与导出</a>
+                </div>
+                <div class="nav-group">
+                    <div class="nav-title">Web 应用</div>
+                    <a href="#web-arch">七、Web 架构</a>
+                    <a href="#sync-service">八、后台同步</a>
+                    <a href="#governance">九、治理审核</a>
+                    <a href="#sse">十、实时推送</a>
+                </div>
+                <div class="nav-group">
+                    <div class="nav-title">其他</div>
+                    <a href="#error">十一、错误处理</a>
+                    <a href="#cli">十二、CLI 入口</a>
+                    <a href="#summary">十三、总结</a>
+                </div>
+            </nav>
+            <a href="#" class="toc-top">返回顶部</a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <h2>lms-client-sdk 技术框架与实现方法</h2>
+            <p>本文档介绍 <code>src</code> 文件夹下 UMU LMS 客户端 SDK 及 Web 管理应用的技术架构、核心模块设计和关键实现方法。</p>
+
+            <!-- Section 1 -->
+            <h3 id="overview">一、项目整体架构</h3>
+            <p><code>src</code> 采用<strong>双层架构</strong>，SDK 核心层与 Web 应用层职责分明：</p>
+
+            <div class="arch-box">
+                <h5>Web 应用层 (src/web)</h5>
+                <div class="arch-item">Flask 路由 (app.py) — REST API + SSE + 页面渲染</div>
+                <div class="arch-item">后台同步服务 (sync_service.py) — 用户/课程数据同步</div>
+                <div class="arch-item">治理审核服务 (governance_service.py) — 课程合规检查</div>
+                <div class="arch-item">前端模板 + 静态资源 — Jinja2 + Vanilla JS</div>
+            </div>
+            <div class="arch-arrow">&#8595; 调用 SDK</div>
+            <div class="arch-box">
+                <h5>SDK 核心层 (src/lms_client)</h5>
+                <div class="arch-item">HTTP 客户端 (client.py) — 请求/重试/分页/批量</div>
+                <div class="arch-item">认证模块 (auth.py) — Cookie / Token / AES 加密</div>
+                <div class="arch-item">API 端点 (endpoints/) — 各域业务方法封装</div>
+                <div class="arch-item">持久化 (storage/) — ORM + 导出</div>
+                <div class="arch-item">CLI (cli.py) — 命令行工具</div>
+            </div>
+
+            <p><strong>设计原则</strong>：SDK 层可独立作为 Python 包使用（<code>pip install</code>），Web 层基于 SDK 构建可视化界面，两者松耦合。</p>
+
+            <!-- Section 2 -->
+            <h3 id="tech-stack">二、技术选型</h3>
+            <table>
+                <tr>
+                    <th>领域</th>
+                    <th>技术</th>
+                    <th>最低版本</th>
+                </tr>
+                <tr>
+                    <td>编程语言</td>
+                    <td>Python</td>
+                    <td>&gt;= 3.10</td>
+                </tr>
+                <tr>
+                    <td>HTTP 客户端</td>
+                    <td><code>requests</code></td>
+                    <td>&gt;= 2.31.0</td>
+                </tr>
+                <tr>
+                    <td>数据验证</td>
+                    <td><code>pydantic</code></td>
+                    <td>&gt;= 2.5.0</td>
+                </tr>
+                <tr>
+                    <td>ORM / 数据库</td>
+                    <td><code>SQLAlchemy</code></td>
+                    <td>&gt;= 2.0.0</td>
+                </tr>
+                <tr>
+                    <td>数据导出</td>
+                    <td><code>pandas</code> + <code>openpyxl</code></td>
+                    <td>&gt;= 2.1.0 / &gt;= 3.1.0</td>
+                </tr>
+                <tr>
+                    <td>Web 框架</td>
+                    <td><code>Flask</code></td>
+                    <td>&gt;= 3.0.0</td>
+                </tr>
+                <tr>
+                    <td>密码加密</td>
+                    <td><code>cryptography</code></td>
+                    <td>&gt;= 42.0.0</td>
+                </tr>
+                <tr>
+                    <td>配置管理</td>
+                    <td><code>python-dotenv</code></td>
+                    <td>&gt;= 1.0.0</td>
+                </tr>
+            </table>
+
+            <!-- Section 3 -->
+            <h3 id="http-client">三、HTTP 客户端实现</h3>
+            <p><code>LMSClient</code> (<code>client.py</code>) 是基于 <code>requests.Session</code> 的封装，面向 UMU API 提供以下核心能力：</p>
+
+            <h4>3.1 路径参数替换</h4>
+            <p><code>request()</code> 方法支持 <code>{key}</code> 模板替换，适配 RESTful 路径：</p>
+            <pre><code>client.get("/uapi/v1/course/{course_id}", path_params={"course_id": "12345"})</code></pre>
+
+            <h4>3.2 自动重试与退避</h4>
+            <p>默认 3 次重试，采用<strong>指数退避</strong>策略（间隔 2^n 秒）：</p>
+            <ul>
+                <li><code>LMSAuthError</code> (401/403) — 触发认证刷新后重试</li>
+                <li><code>LMSRateLimitError</code> (429) — 退避后重试</li>
+                <li><code>requests.RequestException</code> — 网络层故障重试</li>
+            </ul>
+
+            <h4>3.3 分页自动遍历</h4>
+            <p><code>list_all()</code> 智能识别 UMU 分页格式，提取 <code>total_page_num</code> 精确遍历全部页面，避免传统 <code>len(items) &lt; size</code> 启发式的数据丢失问题：</p>
+            <pre><code>users = client.list_all("/uapi/v1/enterprise/user-list", data_key="data")</code></pre>
+
+            <h4>3.4 批量并发操作</h4>
+            <p><code>batch_get()</code> 和 <code>batch_create()</code> 使用 <code>ThreadPoolExecutor</code>（默认 5 并发），单点失败不影响整体：</p>
+            <pre><code>results = client.batch_get(
+    ids=[1, 2, 3],
+    path_template="/uapi/v1/course/{id}",
+    id_key="id"
+)</code></pre>
+
+            <!-- Section 4 -->
+            <h3 id="auth">四、认证模块</h3>
+            <p>认证模块 (<code>auth.py</code>) 采用<strong>策略模式</strong>，通过 <code>AuthBase</code> 抽象接口统一不同认证方式：</p>
+
+            <table>
+                <tr>
+                    <th>策略</th>
+                    <th>类名</th>
+                    <th>机制</th>
+                </tr>
+                <tr>
+                    <td>Cookie 会话</td>
+                    <td><code>SessionAuth</code></td>
+                    <td>复用 <code>requests.Session</code> 自动管理 Cookies</td>
+                </tr>
+                <tr>
+                    <td>Bearer Token</td>
+                    <td><code>TokenAuth</code></td>
+                    <td>注入 <code>Authorization: Bearer</code> 头，支持 Token 自动刷新</td>
+                </tr>
+                <tr>
+                    <td>UMU 专属会话</td>
+                    <td><code>UMUSessionAuth</code></td>
+                    <td>Cookie 登录 + AES-256-CBC 密码加密</td>
+                </tr>
+            </table>
+
+            <h4>4.1 UMU 登录流程</h4>
+            <p><code>UMUSessionAuth</code> 反向解析 UMU 前端 JS 得到 AES Key/IV，实现三步登录：</p>
+            <ol>
+                <li>GET <code>/auth/login</code> 获取页面内联 JS 中的 anti-CSRF token</li>
+                <li>使用 <code>cryptography</code> 的 AES/CBC/PKCS7 模式加密密码</li>
+                <li>POST <code>/passport/ajax/account/login</code> 建立 Cookie 会话</li>
+            </ol>
+
+            <h4>4.2 AuthFactory</h4>
+            <p>支持从 HAR 分析元数据自动选择认证策略，便于根据抓包结果一键配置：</p>
+            <pre><code>auth = AuthFactory.create_from_har_analysis(har_auth_info)
+client = LMSClient(auth=auth)</code></pre>
+
+            <!-- Section 5 -->
+            <h3 id="endpoints">五、API 端点封装</h3>
+            <p><code>endpoints/</code> 目录下每个域独立成模块，采用<strong>显式方法</strong>设计：</p>
+
+            <div class="card">
+                <h4>设计哲学</h4>
+                <p>不使用泛型 CRUD 隐藏 API 细节，而是为每个发现的 API 路由定义精确命名的方法。这使得代码与实际 UMU 接口一一对应，便于维护、调试和扩展。</p>
+            </div>
+
+            <p><code>EndpointBase</code> 提供通用基础方法（<code>list/get/create/update/delete</code>），具体类在此基础上扩展业务方法：</p>
+            <pre><code># base.py
+class EndpointBase:
+    def list(self, path: str, **kwargs) -> list[dict]: ...
+    def get(self, path: str, **kwargs) -> Any: ...
+
+# organizations.py
+class OrganizationEndpoint(EndpointBase):
+    def list_departments_by_level(self, level: int = 1) -> list[dict]: ...
+    def batch_add_user_to_group(self, user_ids: list[str], group_id: str) -> dict: ...</code></pre>
+
+            <!-- Section 6 -->
+            <h3 id="storage">六、持久化与导出</h3>
+
+            <h4>6.1 数据库层</h4>
+            <ul>
+                <li><code>DatabaseManager</code>：SQLAlchemy 封装，支持 SQLite 和 PostgreSQL 双后端</li>
+                <li><code>models.py</code>：声明式 ORM 模型（<code>User</code>、<code>Course</code>、<code>Organization</code>、<code>Session</code>、<code>GovernanceRun</code> 等）</li>
+                <li><code>save()</code>：使用 <code>session.merge()</code> 实现 bulk upsert（按主键插入或更新）</li>
+                <li><code>migrate_columns()</code>：轻量级列迁移，运行时自动检测并添加缺失列，无需 alembic</li>
+            </ul>
+
+            <h4>6.2 数据导出</h4>
+            <p><code>DataExporter</code> 基于 pandas 将数据库查询结果导出为 CSV、Excel（xlsx）或 JSON 格式，支持批量导出所有表。</p>
+
+            <!-- Section 7 -->
+            <h3 id="web-arch">七、Web 应用架构</h3>
+            <p>Web 应用 (<code>src/web/</code>) 采用<strong>混合模式</strong>：</p>
+            <ul>
+                <li><strong>页面路由</strong>：Flask 渲染 Jinja2 模板（<code>login.html</code>、<code>app.html</code>）</li>
+                <li><strong>数据交互</strong>：RESTful JSON API + Server-Sent Events (SSE) 实时推送</li>
+            </ul>
+
+            <p>核心文件分工：</p>
+            <table>
+                <tr>
+                    <th>文件</th>
+                    <th>职责</th>
+                </tr>
+                <tr>
+                    <td><code>app.py</code></td>
+                    <td>Flask 路由定义：登录/登出、同步 API、治理 API、SSE 流、Excel 导出</td>
+                </tr>
+                <tr>
+                    <td><code>sync_service.py</code></td>
+                    <td>后台用户同步、课程同步、小节级联拉取</td>
+                </tr>
+                <tr>
+                    <td><code>governance_service.py</code></td>
+                    <td>课程合规审核引擎（8 条规则）</td>
+                </tr>
+                <tr>
+                    <td><code>templates/</code></td>
+                    <td>登录页和主应用页（Jinja2）</td>
+                </tr>
+                <tr>
+                    <td><code>static/</code></td>
+                    <td>CSS 样式和前端 JS 逻辑</td>
+                </tr>
+            </table>
+
+            <!-- Section 8 -->
+            <h3 id="sync-service">八、后台同步服务</h3>
+            <p><code>SyncService</code> 使用 <code>threading.Thread</code>（daemon）在后台执行数据同步，避免阻塞 HTTP 请求：</p>
+
+            <h4>8.1 用户同步</h4>
+            <ul>
+                <li>调用 <code>/ajax/enterprise/getUserList</code></li>
+                <li>分页拉取<strong>普通用户</strong>（<code>is_manager=0</code>）和<strong>管理员</strong>（<code>is_manager=1</code>）</li>
+                <li>使用 <code>total_page_num</code> 精确遍历，防止漏数据</li>
+                <li>数据库 upsert 以 <code>umu_id</code> 为主键</li>
+            </ul>
+
+            <h4>8.2 课程同步</h4>
+            <ul>
+                <li>调用 <code>/ajax/enterprise/getReportGroupList</code></li>
+                <li>支持按日期范围筛选（<code>start_day</code> / <code>end_day</code>）</li>
+                <li>级联拉取课程小节（<code>getsessionlistbygroup</code>）</li>
+                <li>处理章节容器嵌套（<code>item_type=2</code> 需二次查询）</li>
+                <li>图片封面变化检测：对比 <code>head_img_old</code> / <code>head_img_new</code> 触发更新</li>
+            </ul>
+
+            <!-- Section 9 -->
+            <h3 id="governance">九、治理审核引擎</h3>
+            <p><code>GovernanceService</code> 实现了一套可配置的课程合规审核规则引擎，共 <strong>8 条规则</strong>：</p>
+
+            <table>
+                <tr>
+                    <th>规则</th>
+                    <th>名称</th>
+                    <th>检查内容</th>
+                </tr>
+                <tr>
+                    <td>规则 1</td>
+                    <td>课程名称</td>
+                    <td>标题是否涉及非培训禁词（含例外词白名单）</td>
+                </tr>
+                <tr>
+                    <td>规则 2</td>
+                    <td>课程形式</td>
+                    <td>标题与 lesson_type 是否一致</td>
+                </tr>
+                <tr>
+                    <td>规则 3</td>
+                    <td>内容分类</td>
+                    <td>是否包含通用力/专业力/领导力/新兴力分类</td>
+                </tr>
+                <tr>
+                    <td>规则 4</td>
+                    <td>课程介绍</td>
+                    <td>描述非空、非占位符，或含图片介绍</td>
+                </tr>
+                <tr>
+                    <td>规则 5</td>
+                    <td>课程学时</td>
+                    <td>是否设置学时且不超过最大阈值</td>
+                </tr>
+                <tr>
+                    <td>规则 6</td>
+                    <td>课程评价/考试</td>
+                    <td>是否包含评价或考试小节</td>
+                </tr>
+                <tr>
+                    <td>规则 7</td>
+                    <td>必修小节</td>
+                    <td>不能所有小节均为选修</td>
+                </tr>
+                <tr>
+                    <td>规则 8</td>
+                    <td>课程课件</td>
+                    <td>是否上传有效课件文档</td>
+                </tr>
+            </table>
+
+            <h4>9.1 规则配置化</h4>
+            <p>所有规则参数（禁词列表、例外词列表、分类白名单、最大学时等）持久化到 <code>governance_configs</code> 表，支持运行时动态调整，无需改代码。</p>
+
+            <h4>9.2 断点续审</h4>
+            <p>审核任务支持中断后恢复（<code>resume_governance</code>）：</p>
+            <ul>
+                <li>应用重启时自动将遗留的 <code>running</code> 状态标记为 <code>interrupted</code></li>
+                <li>续审时跳过已审核的课程，只处理未完成的</li>
+                <li>审核结果按 <code>run_id</code> 隔离存储</li>
+            </ul>
+
+            <!-- Section 10 -->
+            <h3 id="sse">十、实时进度推送</h3>
+            <p>同步和治理任务使用 <strong>Server-Sent Events (SSE)</strong> 向浏览器推送实时进度：</p>
+
+            <pre><code>@app.route("/api/sync/users/status")
+def api_sync_users_status():
+    def generate():
+        while True:
+            status = sync_service.user_status
+            yield f"data: {json.dumps({
+                'running': status.running,
+                'progress': status.progress,
+                'total': status.total,
+                'message': status.message,
+            })}\n\n"
+            if not status.running:
+                break
+            time.sleep(0.5)
+    return Response(generate(), mimetype="text/event-stream")</code></pre>
+
+            <p>前端通过 <code>EventSource</code> 接收事件，驱动进度条和状态文本更新，无需轮询。</p>
+
+            <h4>会话管理</h4>
+            <p>用户登录后，UMU 的 <code>requests.Session</code> cookies 经 <strong>pickle + base64 序列化</strong>存入 Flask session。后台线程通过 <code>deserialize_session()</code> 还原会话，避免重复登录。</p>
+
+            <h4>权限控制</h4>
+            <p>基于 UMU API 返回的 <code>role_type == "4"</code> 判断管理员身份。所有同步和治理操作要求 <code>is_admin == true</code>，否则返回 403。</p>
+
+            <!-- Section 11 -->
+            <h3 id="error">十一、错误处理体系</h3>
+            <p><code>exceptions.py</code> 定义了以 <code>LMSAPIError</code> 为根的异常层次：</p>
+
+            <table>
+                <tr>
+                    <th>HTTP 状态码</th>
+                    <th>异常类</th>
+                    <th>场景</th>
+                    <th>自动重试</th>
+                </tr>
+                <tr>
+                    <td>401 / 403</td>
+                    <td><code>LMSAuthError</code></td>
+                    <td>认证失败 / 权限不足</td>
+                    <td><span class="badge badge-green">是</span>（触发 refresh）</td>
+                </tr>
+                <tr>
+                    <td>404</td>
+                    <td><code>LMSNotFoundError</code></td>
+                    <td>资源不存在</td>
+                    <td><span class="badge badge-red">否</span></td>
+                </tr>
+                <tr>
+                    <td>429</td>
+                    <td><code>LMSRateLimitError</code></td>
+                    <td>请求频率限制</td>
+                    <td><span class="badge badge-green">是</span>（指数退避）</td>
+                </tr>
+                <tr>
+                    <td>400 / 422</td>
+                    <td><code>LMSValidationError</code></td>
+                    <td>参数校验失败</td>
+                    <td><span class="badge badge-red">否</span></td>
+                </tr>
+                <tr>
+                    <td>网络层</td>
+                    <td><code>LMSAPIError</code></td>
+                    <td>连接超时 / DNS 失败</td>
+                    <td><span class="badge badge-green">是</span></td>
+                </tr>
+            </table>
+
+            <!-- Section 12 -->
+            <h3 id="cli">十二、CLI 入口</h3>
+            <p><code>cli.py</code> 提供命令行工具 <code>lms-cli</code>（由 <code>pyproject.toml</code> 注册入口点），支持以下子命令：</p>
+
+            <table>
+                <tr>
+                    <th>命令</th>
+                    <th>功能</th>
+                </tr>
+                <tr>
+                    <td><code>lms-cli login</code></td>
+                    <td>认证测试，验证账号密码</td>
+                </tr>
+                <tr>
+                    <td><code>lms-cli list-users</code></td>
+                    <td>导出用户列表为 CSV / Excel / JSON</td>
+                </tr>
+                <tr>
+                    <td><code>lms-cli sync</code></td>
+                    <td>同步 API 数据到本地 SQLite 数据库</td>
+                </tr>
+                <tr>
+                    <td><code>lms-cli export-all</code></td>
+                    <td>批量导出所有数据表</td>
+                </tr>
+            </table>
+
+            <!-- Section 13 -->
+            <h3 id="summary">十三、总结</h3>
+            <p>本项目是一个<strong>从 HAR 抓包反向工程而来的企业级 SDK + Web 管理工具</strong>。在技术实现上强调以下设计目标：</p>
+
+            <div class="card">
+                <h4>1. 可靠性</h4>
+                <ul>
+                    <li>指数退避重试机制应对瞬态故障</li>
+                    <li><code>total_page_num</code> 精确分页防止数据丢失</li>
+                    <li>治理审核支持断点续审，保证大任务可恢复</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h4>2. 性能</h4>
+                <ul>
+                    <li><code>ThreadPoolExecutor</code> 批量并发请求</li>
+                    <li>SSE 实时推送替代轮询，降低服务器负载</li>
+                    <li>数据库批量 upsert 减少 I/O 次数</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h4>3. 可扩展性</h4>
+                <ul>
+                    <li>分层架构：SDK 与 Web 解耦</li>
+                    <li>AuthBase 策略模式支持多种认证方式</li>
+                    <li>规则配置化：治理参数运行时可调</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h4>4. 数据完整性</h4>
+                <ul>
+                    <li>ORM merge 实现主键级 upsert</li>
+                    <li>课程同步级联拉取小节和章节</li>
+                    <li>Session cookies 序列化复用，保持登录状态</li>
+                </ul>
+            </div>
+
+            <p style="margin-top: 40px; color: var(--text-muted); font-size: 13px; text-align: center;">
+                文档生成时间：2026/05/13 &nbsp;|&nbsp; lms-client-sdk v0.1.0
+            </p>
+        </main>
+    </div>
+</body>
+</html>

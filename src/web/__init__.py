@@ -1,0 +1,1 @@
+"""UMU Advanced web application."""
